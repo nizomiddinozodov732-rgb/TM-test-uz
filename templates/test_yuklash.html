@@ -107,7 +107,7 @@
         window.addEventListener('DOMContentLoaded', async function() {
             const serverAvailable = await checkServer();
             if (!serverAvailable) {
-                alert('⚠️ Backend server ishlamayapti!\n\nIltimos, terminalda "python app.py" buyrug\'ini bajaring va sahifani yangilang.');
+                alert('⚠️ Backend server ishlamayapti!\n\nIltimos, terminalda "python api/app.py" buyrug\'ini bajaring va sahifani yangilang.');
             }
         });
 
@@ -355,7 +355,7 @@
                 
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                     errorMsg += 'Server bilan bog\'lanishda muammo. Backend server ishlamoqdamimi tekshiring!\n\n';
-                    errorMsg += 'Terminalda quyidagi buyruqni bajaring:\npython app.py';
+                    errorMsg += 'Terminalda quyidagi buyruqni bajaring:\npython api/app.py';
                 } else {
                     errorMsg += error.message;
                 }

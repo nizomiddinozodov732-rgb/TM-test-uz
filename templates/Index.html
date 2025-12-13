@@ -68,7 +68,7 @@
                         </ol>
                         <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">
 pip install -r requirements.txt
-python app.py
+python api/app.py
                         </pre>
                         <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
                     </div>
@@ -110,7 +110,7 @@ python app.py
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                     errorMessage += '<br><strong>Backend server ishlamayapti!</strong><br>';
                     errorMessage += 'Iltimos, quyidagi buyruqni terminalda bajaring:<br>';
-                    errorMessage += '<code>python app.py</code>';
+                    errorMessage += '<code>python api/app.py</code>';
                 } else {
                     errorMessage += error.message;
                 }
