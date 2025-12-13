@@ -96,22 +96,28 @@
             }
         }
 
+        // Local development ekanligini tekshirish
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
         // Sahifa yuklanganda testlarni yuklash
         window.addEventListener('DOMContentLoaded', async function() {
-            const serverAvailable = await checkServer();
-            if (!serverAvailable) {
-                const container = document.getElementById('testsContainer');
-                container.innerHTML = `
-                    <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
-                        <h3>⚠️ Server bilan bog'lanishda muammo!</h3>
-                        <p><strong>Backend server ishlamayapti.</strong></p>
-                        <p>Iltimos, terminalda quyidagi buyruqni bajaring:</p>
-                        <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">python api/app.py</pre>
-                        <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
-                    </div>
-                `;
-                container.style.display = 'block';
-                return;
+            // Server mavjudligini tekshirish (faqat localhost'da)
+            if (isLocalhost) {
+                const serverAvailable = await checkServer();
+                if (!serverAvailable) {
+                    const container = document.getElementById('testsContainer');
+                    container.innerHTML = `
+                        <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
+                            <h3>⚠️ Server bilan bog'lanishda muammo!</h3>
+                            <p><strong>Backend server ishlamayapti.</strong></p>
+                            <p>Iltimos, terminalda quyidagi buyruqni bajaring:</p>
+                            <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">python api/app.py</pre>
+                            <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
+                        </div>
+                    `;
+                    container.style.display = 'block';
+                    return;
+                }
             }
             await loadAllTests();
         });

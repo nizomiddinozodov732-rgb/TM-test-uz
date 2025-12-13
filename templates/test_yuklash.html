@@ -103,11 +103,16 @@
             }
         }
         
-        // Sahifa yuklanganda server mavjudligini tekshirish
+        // Local development ekanligini tekshirish
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Sahifa yuklanganda server mavjudligini tekshirish (faqat localhost'da)
         window.addEventListener('DOMContentLoaded', async function() {
-            const serverAvailable = await checkServer();
-            if (!serverAvailable) {
-                alert('⚠️ Backend server ishlamayapti!\n\nIltimos, terminalda "python api/app.py" buyrug\'ini bajaring va sahifani yangilang.');
+            if (isLocalhost) {
+                const serverAvailable = await checkServer();
+                if (!serverAvailable) {
+                    alert('⚠️ Backend server ishlamayapti!\n\nIltimos, terminalda "python api/app.py" buyrug\'ini bajaring va sahifani yangilang.');
+                }
             }
         });
 
@@ -354,8 +359,12 @@
                 let errorMsg = 'Xatolik yuz berdi: ';
                 
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    errorMsg += 'Server bilan bog\'lanishda muammo. Backend server ishlamoqdamimi tekshiring!\n\n';
-                    errorMsg += 'Terminalda quyidagi buyruqni bajaring:\npython api/app.py';
+                    if (isLocalhost) {
+                        errorMsg += 'Server bilan bog\'lanishda muammo. Backend server ishlamoqdamimi tekshiring!\n\n';
+                        errorMsg += 'Terminalda quyidagi buyruqni bajaring:\npython api/app.py';
+                    } else {
+                        errorMsg += 'Server bilan bog\'lanishda muammo. Iltimos, keyinroq qayta urinib ko\'ring.';
+                    }
                 } else {
                     errorMsg += error.message;
                 }

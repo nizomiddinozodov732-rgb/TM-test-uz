@@ -50,11 +50,15 @@
             }
         }
 
+        // Local development ekanligini tekshirish
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
         // Sahifa yuklanganda testlarni yuklash
         window.addEventListener('DOMContentLoaded', async function() {
-            // Server mavjudligini tekshirish
-            const serverAvailable = await checkServer();
-            if (!serverAvailable) {
+            // Server mavjudligini tekshirish (faqat localhost'da)
+            if (isLocalhost) {
+                const serverAvailable = await checkServer();
+                if (!serverAvailable) {
                 const container = document.getElementById('testsContainer');
                 container.innerHTML = `
                     <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
