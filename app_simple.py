@@ -446,6 +446,36 @@ def get_result(result_id):
         }
     })
 
+# Root route for health check
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        'message': 'Matematika Test API',
+        'status': 'running',
+        'endpoints': {
+            'login': '/api/login',
+            'tests': '/api/tests',
+            'create_test': '/api/tests/create',
+            'submit_test': '/api/tests/<test_id>/submit',
+            'results': '/api/results/<test_id>'
+        }
+    })
+
+# API root route
+@app.route('/api', methods=['GET'])
+def api_root():
+    return jsonify({
+        'message': 'Matematika Test API',
+        'version': '1.0',
+        'endpoints': {
+            'login': '/api/login',
+            'tests': '/api/tests',
+            'create_test': '/api/tests/create',
+            'submit_test': '/api/tests/<test_id>/submit',
+            'results': '/api/results/<test_id>'
+        }
+    })
+
 # Error handling
 @app.errorhandler(404)
 def not_found(error):
