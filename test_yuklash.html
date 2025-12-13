@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Yuklash</title>
+    <link rel="stylesheet" href="test_yuklash.css   ">
+</head>
+<body>
+    <header>
+        <nav>
+            <button><a href="./Index.html">Bosh sahifa</a></button>
+        </nav>
+    </header>
+    <section>
+        <form id="testNameForm">
+            <label for="testName">Test nomini kiritng va tizim unga avtomatik tarzda 6 xonali id tanlaydi:</label><br>
+            <input type="text" id="testName" placeholder="Test nomini kiriting" required><br><br>
+            
+            <label for="testClass">Sinf turi:</label><br>
+            <select id="testClass" required>
+                <option value="">Sinfni tanlang</option>
+                <option value="1-sinf">1-sinf</option>
+                <option value="2-sinf">2-sinf</option>
+                <option value="3-sinf">3-sinf</option>
+                <option value="4-sinf">4-sinf</option>
+                <option value="5-sinf">5-sinf</option>
+                <option value="6-sinf">6-sinf</option>
+                <option value="7-sinf">7-sinf</option>
+                <option value="8-sinf">8-sinf</option>
+                <option value="9-sinf">9-sinf</option>
+                <option value="10-sinf">10-sinf</option>
+                <option value="11-sinf">11-sinf</option>
+                <option value="12-sinf">12-sinf</option>
+                <option value="Alypiada">Alypiada</option>
+                <option value="Oddiy">Oddiy</option>
+            </select><br><br>
+            
+            <label for="testSubject">Fan yoki tur:</label><br>
+            <select id="testSubject" required>
+                <option value="">Fanni tanlang</option>
+                <option value="Matematika">Matematika</option>
+                <option value="Fizika">Fizika</option>
+                <option value="Kimyo">Kimyo</option>
+                <option value="Biologiya">Biologiya</option>
+                <option value="Geografiya">Geografiya</option>
+                <option value="Tarix">Tarix</option>
+                <option value="Ona tili">Ona tili</option>
+                <option value="Ingliz tili">Ingliz tili</option>
+                <option value="Informatika">Informatika</option>
+                <option value="Mantiqiy">Mantiqiy</option>
+                <option value="Boshqa">Boshqa</option>
+            </select><br><br>
+            
+            <label for="testTime">Test vaqti (daqiqa):</label><br>
+            <input type="number" id="testTime" placeholder="Masalan: 30" min="1" required><br><br>
+            
+            <label for="testImage">Test uchun rasm yuklash (ixtiyoriy):</label><br>
+            <input type="file" id="testImage" accept="image/*" onchange="previewImage(this)">
+            <div id="imagePreview" style="margin-top: 10px; display: none;">
+                <img id="previewImg" src="" alt="Rasm ko'rinishi" style="max-width: 300px; max-height: 200px; border: 1px solid #ccc; border-radius: 5px;">
+                <button type="button" onclick="removeImage()" style="margin-left: 10px; padding: 5px 10px; background: red; color: white; border: none; border-radius: 3px; cursor: pointer;">Rasmni olib tashlash</button>
+            </div>
+        </form>
+    </section>
+    
+    <aside>
+        <button class="test_qosh" id="addQuestionBtn">yangi test savoli qo'shish uchun bosing:(+)</button>
+        <div class="ortga_oldinga">
+            <button class="otkazish" id="prevQuestion"> < </button>
+            <button class="otkazish" id="nextQuestion"> > </button>
+            <div class="box" id="questionCounter">1-savol</div>
+        </div>
+        <div id="questionsContainer">
+            <!-- Savollar bu yerga dinamik ravishda qo'shiladi -->
+        </div>
+        <button class="tasdiqla" id="submitTestBtn" style="display: none;">Testni yuklash uchun bosing:</button>
+    </aside>    
+    <footer>
+        <h1 id="testIdDisplay">Id - (yuklanmoqda...)</h1>
+    </footer>
+
+    <script>
+        // API URL - agar boshqa portda ishlasa, bu yerni o'zgartiring
+        const API_URL = 'http://localhost:5000/api';
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let testImageBase64 = null; // Rasm base64 formatida
+        
+        // Server mavjudligini tekshirish
+        async function checkServer() {
+            try {
+                const response = await fetch(`${API_URL}/tests`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // Sahifa yuklanganda server mavjudligini tekshirish
+        window.addEventListener('DOMContentLoaded', async function() {
+            const serverAvailable = await checkServer();
+            if (!serverAvailable) {
+                alert('⚠️ Backend server ishlamayapti!\n\nIltimos, terminalda "python app.py" buyrug\'ini bajaring va sahifani yangilang.');
+            }
+        });
+
+        // Savol qo'shish
+        document.getElementById('addQuestionBtn').addEventListener('click', function() {
+            addQuestion();
+        });
+
+        // Oldingi savol
+        document.getElementById('prevQuestion').addEventListener('click', function() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion(currentQuestionIndex);
+            }
+        });
+
+        // Keyingi savol
+        document.getElementById('nextQuestion').addEventListener('click', function() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            }
+        });
+
+        // Testni yuklash
+        document.getElementById('submitTestBtn').addEventListener('click', function() {
+            submitTest();
+        });
+
+        function addQuestion() {
+            const questionIndex = questions.length;
+            questions.push({
+                question_text: '',
+                answers: [
+                    { variant: 'A', text: '' },
+                    { variant: 'B', text: '' },
+                    { variant: 'C', text: '' },
+                    { variant: 'D', text: '' }
+                ],
+                correct_answer: 'A'
+            });
+            
+            currentQuestionIndex = questionIndex;
+            showQuestion(currentQuestionIndex);
+            document.getElementById('submitTestBtn').style.display = 'block';
+        }
+
+        function showQuestion(index) {
+            if (questions.length === 0) {
+                document.getElementById('questionsContainer').innerHTML = '<p>Savol qo\'shing</p>';
+                return;
+            }
+
+            const question = questions[index];
+            const questionNum = index + 1;
+            document.getElementById('questionCounter').textContent = `${questionNum}-savol`;
+
+            const html = `
+                <form id="questionForm${index}">
+                    <h4>${questionNum}-savol</h4>
+                    <label for="questionText${index}">Savolni kiriting</label>
+                    <input type="text" id="questionText${index}" placeholder="savolni kiriting" 
+                           value="${question.question_text}" 
+                           onchange="updateQuestion(${index}, 'question_text', this.value)">
+
+                    <div class="answer-row">
+                        <label for="variantA${index}">A variant:</label>
+                        <div class="answer-input-wrap">
+                            <input type="text" id="variantA${index}" placeholder="A variant" 
+                                   value="${question.answers[0].text}"
+                                   onchange="updateAnswer(${index}, 0, this.value)">
+                            <label class="radio-inline">
+                                <input type="radio" name="correctAnswer${index}" value="A" 
+                                       ${question.correct_answer === 'A' ? 'checked' : ''}
+                                       onchange="updateQuestion(${index}, 'correct_answer', 'A'); updateCorrectBadge(${index});">
+                                To'g'ri
+                            </label>
+                            <span class="badge" id="badge-${index}-A"></span>
+                        </div>
+                    </div>
+
+                    <div class="answer-row">
+                        <label for="variantB${index}">B variant:</label>
+                        <div class="answer-input-wrap">
+                            <input type="text" id="variantB${index}" placeholder="B variant" 
+                                   value="${question.answers[1].text}"
+                                   onchange="updateAnswer(${index}, 1, this.value)">
+                            <label class="radio-inline">
+                                <input type="radio" name="correctAnswer${index}" value="B" 
+                                       ${question.correct_answer === 'B' ? 'checked' : ''}
+                                       onchange="updateQuestion(${index}, 'correct_answer', 'B'); updateCorrectBadge(${index});">
+                                To'g'ri
+                            </label>
+                            <span class="badge" id="badge-${index}-B"></span>
+                        </div>
+                    </div>
+
+                    <div class="answer-row">
+                        <label for="variantC${index}">C variant:</label>
+                        <div class="answer-input-wrap">
+                            <input type="text" id="variantC${index}" placeholder="C variant" 
+                                   value="${question.answers[2].text}"
+                                   onchange="updateAnswer(${index}, 2, this.value)">
+                            <label class="radio-inline">
+                                <input type="radio" name="correctAnswer${index}" value="C" 
+                                       ${question.correct_answer === 'C' ? 'checked' : ''}
+                                       onchange="updateQuestion(${index}, 'correct_answer', 'C'); updateCorrectBadge(${index});">
+                                To'g'ri
+                            </label>
+                            <span class="badge" id="badge-${index}-C"></span>
+                        </div>
+                    </div>
+
+                    <div class="answer-row">
+                        <label for="variantD${index}">D variant:</label>
+                        <div class="answer-input-wrap">
+                            <input type="text" id="variantD${index}" placeholder="D variant" 
+                                   value="${question.answers[3].text}"
+                                   onchange="updateAnswer(${index}, 3, this.value)">
+                            <label class="radio-inline">
+                                <input type="radio" name="correctAnswer${index}" value="D" 
+                                       ${question.correct_answer === 'D' ? 'checked' : ''}
+                                       onchange="updateQuestion(${index}, 'correct_answer', 'D'); updateCorrectBadge(${index});">
+                                To'g'ri
+                            </label>
+                            <span class="badge" id="badge-${index}-D"></span>
+                        </div>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('questionsContainer').innerHTML = html;
+            updateCorrectBadge(index);
+        }
+
+        function updateQuestion(index, field, value) {
+            if (questions[index]) {
+                questions[index][field] = value;
+            }
+        }
+
+        function updateAnswer(index, answerIndex, value) {
+            if (questions[index] && questions[index].answers[answerIndex]) {
+                questions[index].answers[answerIndex].text = value;
+            }
+        }
+
+        async function submitTest() {
+            const testName = document.getElementById('testName').value.trim();
+            const testClass = document.getElementById('testClass').value;
+            const testSubject = document.getElementById('testSubject').value;
+            const testTime = document.getElementById('testTime').value;
+            
+            if (!testName) {
+                alert('Test nomini kiriting!');
+                return;
+            }
+            
+            if (!testClass) {
+                alert('Sinf turini tanlang!');
+                return;
+            }
+            
+            if (!testSubject) {
+                alert('Fanni tanlang!');
+                return;
+            }
+            
+            if (!testTime || parseInt(testTime) < 1) {
+                alert('Test vaqtini kiriting (kamida 1 daqiqa)!');
+                return;
+            }
+
+            if (questions.length === 0) {
+                alert('Kamida bitta savol qo\'shing!');
+                return;
+            }
+
+            // Barcha savollarni tekshirish
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i];
+                if (!q.question_text.trim()) {
+                    alert(`${i + 1}-savol matni bo'sh bo'lishi mumkin emas!`);
+                    return;
+                }
+                for (let j = 0; j < q.answers.length; j++) {
+                    if (!q.answers[j].text.trim()) {
+                        alert(`${i + 1}-savolning ${q.answers[j].variant} varianti bo'sh bo'lishi mumkin emas!`);
+                        return;
+                    }
+                }
+            }
+
+            const testData = {
+                name: testName,
+                class_level: testClass,
+                subject: testSubject,
+                duration_minutes: parseInt(testTime, 10),
+                questions: questions,
+                image: testImageBase64 // Rasm base64 formatida
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/tests/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(testData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.test_id) {
+                    document.getElementById('testIdDisplay').textContent = `Id - (${result.test_id})`;
+                    const confirmMessage = `Test muvaffaqiyatli yuklandi! Test ID: ${result.test_id}\n\nBosh sahifaga qaytishni xohlaysizmi?`;
+                    
+                    if (confirm(confirmMessage)) {
+                        window.location.href = './Index.html';
+                    } else {
+                        // Formani tozalash
+                        document.getElementById('testName').value = '';
+                        document.getElementById('testClass').value = '';
+                        document.getElementById('testSubject').value = '';
+                        document.getElementById('testTime').value = '';
+                        removeImage();
+                        questions = [];
+                        currentQuestionIndex = 0;
+                        document.getElementById('questionsContainer').innerHTML = '';
+                        document.getElementById('submitTestBtn').style.display = 'none';
+                        document.getElementById('questionCounter').textContent = '1-savol';
+                        document.getElementById('testIdDisplay').textContent = 'Id - (yuklanmoqda...)';
+                    }
+                } else {
+                    alert('Xatolik: ' + (result.error || 'Test yuklanmadi'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMsg = 'Xatolik yuz berdi: ';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMsg += 'Server bilan bog\'lanishda muammo. Backend server ishlamoqdamimi tekshiring!\n\n';
+                    errorMsg += 'Terminalda quyidagi buyruqni bajaring:\npython app.py';
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                alert(errorMsg);
+            }
+        }
+
+        // Rasmni ko'rsatish
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Fayl hajmini tekshirish (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Rasm hajmi 2MB dan katta bo\'lishi mumkin emas!');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    testImageBase64 = e.target.result;
+                    document.getElementById('previewImg').src = testImageBase64;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Rasmni olib tashlash
+        function removeImage() {
+            testImageBase64 = null;
+            document.getElementById('testImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('previewImg').src = '';
+        }
+        
+        // Global funksiyalar
+        window.updateQuestion = updateQuestion;
+        window.updateAnswer = updateAnswer;
+        window.updateCorrectBadge = updateCorrectBadge;
+
+        function updateCorrectBadge(index){
+            const question = questions[index];
+            if (!question) return;
+            const variants = ['A','B','C','D'];
+            variants.forEach(v=>{
+                const badge = document.getElementById(`badge-${index}-${v}`);
+                if (!badge) return;
+                if (question.correct_answer === v){
+                    badge.textContent = 'To\'g\'ri javob';
+                    badge.classList.add('badge-correct');
+                } else {
+                    badge.textContent = '';
+                    badge.classList.remove('badge-correct');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

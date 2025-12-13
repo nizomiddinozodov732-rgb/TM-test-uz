@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test natijalari</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+            --accent: #0ea5e9;
+            --accent-dark: #0284c7;
+            --accent-teal: #14b8a6;
+            --accent-soft: #e0f2fe;
+            --danger: #ef4444;
+            --success: #10b981;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+        * { 
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+        }
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header a, header button {
+            text-decoration: none;
+            color: var(--accent);
+            background: white;
+            border: 2px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        header a:hover, header button:hover {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-teal) 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px 40px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 12px 32px rgba(14, 165, 233, 0.15);
+        }
+        .info-box {
+            border-left: 4px solid var(--accent);
+            background: var(--accent-soft);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: var(--text);
+            font-weight: 500;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        .info-box.error {
+            border-left-color: var(--danger);
+            background: #fee;
+            color: var(--danger);
+        }
+        h2 {
+            margin: 0 0 12px 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        h3 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        p { 
+            margin: 8px 0; 
+            color: var(--muted);
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+        }
+        th {
+            color: var(--muted);
+            font-weight: 600;
+            background: var(--bg);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover {
+            background: var(--bg);
+        }
+        .my-row {
+            background: var(--accent-soft);
+            font-weight: 600;
+        }
+        .my-row:hover {
+            background: var(--accent-soft);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 0;
+            font-size: 16px;
+        }
+        button[onclick="deleteTest()"] {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        button[onclick="deleteTest()"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+        @media (max-width: 768px) {
+            header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 10px;
+            }
+            main {
+                padding: 0 15px 30px;
+            }
+            .card {
+                padding: 20px;
+            }
+            th:nth-child(5), td:nth-child(5) { 
+                display: none; 
+            }
+        }
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 18px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            h3 {
+                font-size: 18px;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button onclick="window.location.href='./Index.html'">Bosh sahifa</button>
+        <h1>Test natijalari</h1>
+    </header>
+
+    <main>
+        <div id="status" class="info-box">Natijalar yuklanmoqda...</div>
+
+        <div id="testInfo" class="card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h2 id="testName">Test nomi</h2>
+                    <p id="testMeta"></p>
+                </div>
+                <button onclick="deleteTest()" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 15px;">Testni o'chirish</button>
+            </div>
+        </div>
+
+        <div id="myResult" class="card" style="display: none;">
+            <h3>Sizning natijangiz</h3>
+            <p id="myResultText"></p>
+        </div>
+
+        <div id="resultsWrapper" class="card" style="display: none;">
+            <h3>Barcha natijalar</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>O'rin</th>
+                            <th>Foydalanuvchi</th>
+                            <th>Foiz</th>
+                            <th>To'g'ri javoblar</th>
+                            <th>Tugallangan vaqti</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody"></tbody>
+                </table>
+            </div>
+            <div id="emptyMessage" class="empty" style="display: none;">Hozircha natijalar mavjud emas.</div>
+        </div>
+    </main>
+
+    <!-- Modal oyna kod kiritish uchun -->
+    <div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <h3 style="margin-top: 0;">Testni o'chirish</h3>
+            <p id="deleteTestName" style="margin: 10px 0; color: #666;"></p>
+            <label for="deleteCodeInput" style="display: block; margin-bottom: 5px; font-weight: bold;">Kodni kiriting:</label>
+            <input type="password" id="deleteCodeInput" placeholder="Kodni kiriting" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeDeleteModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Bekor qilish</button>
+                <button onclick="confirmDelete()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">O'chirish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        const params = new URLSearchParams(window.location.search);
+        const testId = params.get('test_id');
+        const userId = params.get('user_id');
+        const userName = decodeURIComponent(params.get('user_name') || '');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!testId) {
+                showStatus("Test ID topilmadi. Havola noto'g'ri.", true);
+                return;
+            }
+            loadResults();
+        });
+
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            if (!message) {
+                status.style.display = 'none';
+                return;
+            }
+            status.textContent = message;
+            status.classList.toggle('error', isError);
+            status.style.display = 'block';
+        }
+
+        async function loadResults() {
+            showStatus('Natijalar yuklanmoqda...');
+
+            try {
+                const fetches = [
+                    fetch(`${API_URL}/results/${testId}`, { method: 'GET', mode: 'cors' })
+                ];
+
+                if (userId) {
+                    fetches.push(fetch(`${API_URL}/results/user/${userId}`, { method: 'GET', mode: 'cors' }));
+                }
+
+                const responses = await Promise.all(fetches);
+                const testResultsData = await responses[0].json();
+
+                if (!responses[0].ok) {
+                    throw new Error(testResultsData.error || "Natijalarni olishda xatolik yuz berdi.");
+                }
+
+                let userResultsData = null;
+                if (userId) {
+                    userResultsData = await responses[1].json();
+                    if (!responses[1].ok) {
+                        throw new Error(userResultsData.error || "Foydalanuvchi natijalarini olishda xatolik.");
+                    }
+                }
+
+                renderTestInfo(testResultsData);
+                renderMyResult(userResultsData, testResultsData.results || []);
+                renderResultsTable(testResultsData.results || []);
+
+                showStatus(null);
+            } catch (error) {
+                console.error(error);
+                showStatus(error.message || "Xatolik yuz berdi.", true);
+            }
+        }
+
+        let currentTestName = '';
+
+        function renderTestInfo(data) {
+            if (!data) return;
+            const testInfo = document.getElementById('testInfo');
+            currentTestName = data.test_name || 'Test nomi';
+            document.getElementById('testName').textContent = currentTestName;
+            const classText = data.class_level ? `Sinf: ${data.class_level}` : 'Sinf ko\'rsatilmagan';
+            const durationText = data.duration_minutes ? `Vaqt: ${data.duration_minutes} daqiqa` : 'Vaqt belgilanmagan';
+            document.getElementById('testMeta').textContent = `Test ID: ${testId} — ${classText} — ${durationText}`;
+            testInfo.style.display = 'block';
+        }
+
+        function renderMyResult(userResultsData, allResults) {
+            const myResultCard = document.getElementById('myResult');
+            if (!userId || !userResultsData || !userResultsData.results) {
+                myResultCard.style.display = 'none';
+                return;
+            }
+
+            const myResult = userResultsData.results.find(r => r.test_id === testId);
+            if (!myResult) {
+                myResultCard.style.display = 'none';
+                return;
+            }
+
+            // Reytingni hisoblash
+            let myRank = 0;
+            let totalUsers = 0;
+            if (allResults && allResults.length > 0) {
+                const sortedResults = [...allResults].sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    if (b.correct_answers !== a.correct_answers) {
+                        return b.correct_answers - a.correct_answers;
+                    }
+                    return new Date(a.completed_at) - new Date(b.completed_at);
+                });
+                
+                myRank = sortedResults.findIndex(r => r.user_id === userId) + 1;
+                totalUsers = sortedResults.length;
+            }
+
+            const rankEmoji = myRank === 1 ? '🥇' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '';
+            const correct = `${myResult.correct_answers}/${myResult.total_questions}`;
+            const score = `${myResult.score}%`;
+            const finished = formatDate(myResult.completed_at);
+            const nameText = userName ? `${userName} (${userId})` : `ID: ${userId}`;
+            
+            const rankText = myRank > 0 ? `${rankEmoji} ${myRank}-o'rin (${totalUsers} ta foydalanuvchi orasida)` : '';
+            const scoreColor = myResult.score >= 90 ? '#10b981' : myResult.score >= 70 ? '#2563eb' : myResult.score >= 50 ? '#f59e0b' : '#ef4444';
+            const rankColor = myRank === 1 ? '#FFD700' : myRank === 2 ? '#C0C0C0' : myRank === 3 ? '#CD7F32' : '#2563eb';
+
+            document.getElementById('myResultText').innerHTML = `
+                ${rankText ? `<div style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: ${rankColor};">
+                    ${rankText}
+                </div>` : ''}
+                <div style="font-size: 16px; margin-bottom: 10px;">
+                    <strong>${nameText}</strong>
+                </div>
+                <div style="font-size: 20px; font-weight: 600; color: ${scoreColor}; margin-bottom: 10px;">
+                    ${score} (${correct})
+                </div>
+                <div style="font-size: 14px; color: #64748b;">
+                    Tugallangan vaqt: ${finished}
+                </div>
+            `;
+            myResultCard.style.display = 'block';
+        }
+
+        function renderResultsTable(results) {
+            const tbody = document.getElementById('resultsTableBody');
+            const wrapper = document.getElementById('resultsWrapper');
+            const empty = document.getElementById('emptyMessage');
+
+            tbody.innerHTML = '';
+
+            if (!results || results.length === 0) {
+                wrapper.style.display = 'block';
+                empty.style.display = 'block';
+                return;
+            }
+
+            // Natijalarni foiz bo'yicha tartiblash (yuqoridan pastga)
+            const sortedResults = [...results].sort((a, b) => {
+                // Avval foiz bo'yicha (yuqoridan pastga)
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                // Agar foiz bir xil bo'lsa, to'g'ri javoblar soni bo'yicha
+                if (b.correct_answers !== a.correct_answers) {
+                    return b.correct_answers - a.correct_answers;
+                }
+                // Agar ikkalasi ham bir xil bo'lsa, vaqt bo'yicha (tezroq tugallangan yuqorida)
+                return new Date(a.completed_at) - new Date(b.completed_at);
+            });
+
+            sortedResults.forEach((res, idx) => {
+                const tr = document.createElement('tr');
+                const rank = idx + 1;
+                const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                
+                if (userId && res.user_id === userId) {
+                    tr.classList.add('my-row');
+                }
+
+                tr.innerHTML = `
+                    <td style="font-weight: ${rank <= 3 ? '700' : '600'}; color: ${rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : 'inherit'};">
+                        ${rankEmoji} ${rank}
+                    </td>
+                    <td>${res.user_name || 'Noma\'lum'} <span class="badge">${res.user_id}</span></td>
+                    <td style="font-weight: 600; color: ${res.score >= 90 ? '#10b981' : res.score >= 70 ? '#2563eb' : res.score >= 50 ? '#f59e0b' : '#ef4444'};">
+                        ${res.score}%
+                    </td>
+                    <td>${res.correct_answers}/${res.total_questions}</td>
+                    <td>${formatDate(res.completed_at)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            wrapper.style.display = 'block';
+            empty.style.display = 'none';
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleString();
+        }
+
+        function deleteTest() {
+            if (!testId || !currentTestName) {
+                alert('Test ma\'lumotlari topilmadi');
+                return;
+            }
+            document.getElementById('deleteTestName').textContent = `"${currentTestName}" testini o'chirish uchun kodni kiriting:`;
+            document.getElementById('deleteCodeInput').value = '';
+            document.getElementById('deleteModal').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('deleteCodeInput').focus();
+            }, 100);
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            document.getElementById('deleteCodeInput').value = '';
+        }
+
+        async function confirmDelete() {
+            const code = document.getElementById('deleteCodeInput').value.trim();
+            
+            if (!code) {
+                alert('Iltimos, kodni kiriting!');
+                return;
+            }
+            
+            if (!testId) {
+                return;
+            }
+            
+            if (!confirm(`"${currentTestName}" testini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi!`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/tests/${testId}/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Xatolik yuz berdi');
+                }
+                
+                closeDeleteModal();
+                alert('Test muvaffaqiyatli o\'chirildi!');
+                // Bosh sahifaga qaytish
+                window.location.href = './Index.html';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Xatolik: ' + error.message);
+            }
+        }
+
+        // Enter tugmasi bosilganda o'chirish va Escape bilan yopish
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('deleteCodeInput');
+            const modal = document.getElementById('deleteModal');
+            
+            if (codeInput) {
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        confirmDelete();
+                    }
+                });
+            }
+            
+            // Escape tugmasi bilan yopish
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+                    closeDeleteModal();
+                }
+            });
+            
+            // Modal tashqarisiga bosilganda yopish
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeDeleteModal();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

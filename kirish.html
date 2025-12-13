@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testga Kirish</title>
+    <link rel="stylesheet" href="./kirish.css">
+</head>
+<body>
+    <header>
+        <nav><a href="./Index.html" onclick="return true;">← Ortga qaytish</a></nav>
+        <hr>
+    </header>
+    <section>
+        <div class="box">
+            <h1>Testga Kirish</h1>
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="testId">Test ID</label>
+                    <input type="text" id="testId" placeholder="Test ID ni kiriting (masalan: 123456)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">Ism va Familiya</label>
+                    <input type="text" id="fullName" placeholder="Ism va Familiyangizni kiriting" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="classLevel">Sinfingizni tanlang</label>
+                    <select id="classLevel" required>
+                        <option value="">Sinfni tanlang</option>
+                        <option value="1-sinf">1-sinf</option>
+                        <option value="2-sinf">2-sinf</option>
+                        <option value="3-sinf">3-sinf</option>
+                        <option value="4-sinf">4-sinf</option>
+                        <option value="5-sinf">5-sinf</option>
+                        <option value="6-sinf">6-sinf</option>
+                        <option value="7-sinf">7-sinf</option>
+                        <option value="8-sinf">8-sinf</option>
+                        <option value="9-sinf">9-sinf</option>
+                        <option value="10-sinf">10-sinf</option>
+                        <option value="11-sinf">11-sinf</option>
+                        <option value="12-sinf">12-sinf</option>
+                        <option value="Alypiada">Alypiada</option>
+                        <option value="Oddiy">Oddiy</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Fan yoki tur (ixtiyoriy):</label>
+                    <select id="subject">
+                        <option value="">Fanni tanlang (ixtiyoriy)</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="Fizika">Fizika</option>
+                        <option value="Kimyo">Kimyo</option>
+                        <option value="Biologiya">Biologiya</option>
+                        <option value="Geografiya">Geografiya</option>
+                        <option value="Tarix">Tarix</option>
+                        <option value="Ona tili">Ona tili</option>
+                        <option value="Ingliz tili">Ingliz tili</option>
+                        <option value="Informatika">Informatika</option>
+                        <option value="Mantiqiy">Mantiqiy</option>
+                        <option value="Boshqa">Boshqa</option>
+                    </select>
+                </div>
+                
+                <button type="button" id="submitBtn">Testni Boshlash</button>
+                <div id="errorMessage"></div>
+                <div id="testInfo" style="display: none; margin-top: 15px; padding: 10px; background: #e0f2fe; border-radius: 8px; color: #1e3a8a;"></div>
+            </form>
+        </div>
+    </section>
+    
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Formani to'g'ri ishlashini ta'minlash
+        const form = document.getElementById('loginForm');
+        let isSubmitting = false; // Ikki marta yuborilishini oldini olish
+        
+        if (!form) {
+            console.error('Form topilmadi!');
+        }
+        
+        // Enter tugmasini barcha inputlarda boshqarish
+        document.addEventListener('DOMContentLoaded', async function() {
+            // URL parametridan test_id olish
+            const urlParams = new URLSearchParams(window.location.search);
+            const testId = urlParams.get('test_id');
+            
+            if (testId) {
+                document.getElementById('testId').value = testId;
+                // Test ma'lumotlarini avtomatik yuklash
+                try {
+                    const testResponse = await fetch(`${API_URL}/tests/${testId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'cors'
+                    });
+                    
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        const test = testData.test;
+                        
+                        // Test ma'lumotlarini ko'rsatish
+                        const testInfoDiv = document.getElementById('testInfo');
+                        if (test) {
+                            let infoText = `<strong>Test:</strong> ${test.name}`;
+                            if (test.class_level) {
+                                infoText += ` | <strong>Sinf:</strong> ${test.class_level}`;
+                            }
+                            if (test.subject) {
+                                infoText += ` | <strong>Fan:</strong> ${test.subject}`;
+                            }
+                            if (test.duration_minutes) {
+                                infoText += ` | <strong>Vaqt:</strong> ${test.duration_minutes} daqiqa`;
+                            }
+                            testInfoDiv.innerHTML = infoText;
+                            testInfoDiv.style.display = 'block';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading test info:', error);
+                }
+            }
+            
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('keydown', function(e) {
+                    // Agar Enter bosilsa va bu submit tugmasi emas bo'lsa
+                    if (e.key === 'Enter' && input.type !== 'submit') {
+                        // Agar bu select bo'lsa, Enter tugmasini ishlatishga ruxsat berish
+                        if (input.tagName === 'SELECT') {
+                            return; // Select uchun Enter ishlashi kerak
+                        }
+                        // Boshqa inputlar uchun Enter tugmasini to'xtatish
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Keyingi inputga o'tish yoki submit tugmasini bosish
+                        const formElements = Array.from(form.elements).filter(el => 
+                            el.tagName === 'INPUT' || el.tagName === 'SELECT'
+                        );
+                        const currentIndex = formElements.indexOf(input);
+                        const nextElement = formElements[currentIndex + 1];
+                        if (nextElement) {
+                            nextElement.focus();
+                        } else {
+                            // Agar oxirgi element bo'lsa, submit funksiyasini chaqirish
+                            handleSubmit(e);
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Submit funksiyasi
+        async function handleSubmit(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            
+            // Agar allaqachon yuborilmoqda bo'lsa, to'xtatish
+            if (isSubmitting) {
+                return false;
+            }
+            
+            const testId = document.getElementById('testId').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const classLevel = document.getElementById('classLevel').value;
+            
+            const errorDiv = document.getElementById('errorMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Validatsiya
+            if (!testId) {
+                errorDiv.textContent = 'Test ID ni kiriting!';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            
+            if (!fullName) {
+                errorDiv.textContent = 'Ism va Familiyangizni kiriting!';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            if (!classLevel) {
+                errorDiv.textContent = 'Sinfingizni tanlang!';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            
+            errorDiv.style.display = 'none';
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Yuklanmoqda...';
+            
+            try {
+                // Avval test mavjudligini tekshiramiz
+                const testResponse = await fetch(`${API_URL}/tests/${testId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+                
+                if (!testResponse.ok) {
+                    if (testResponse.status === 404) {
+                        throw new Error('Test topilmadi! Test ID ni to\'g\'ri kiriting.');
+                    }
+                    throw new Error('Testni yuklashda xatolik yuz berdi.');
+                }
+
+                const testData = await testResponse.json();
+                const test = testData.test;
+                if (test && test.class_level && test.class_level !== classLevel) {
+                    throw new Error(`Bu test ${test.class_level} uchun. Iltimos, sinfni to'g'ri tanlang.`);
+                }
+                
+                // Test ma'lumotlarini ko'rsatish
+                const testInfoDiv = document.getElementById('testInfo');
+                if (test) {
+                    let infoText = `<strong>Test:</strong> ${test.name}`;
+                    if (test.class_level) {
+                        infoText += ` | <strong>Sinf:</strong> ${test.class_level}`;
+                    }
+                    if (test.subject) {
+                        infoText += ` | <strong>Fan:</strong> ${test.subject}`;
+                    }
+                    if (test.duration_minutes) {
+                        infoText += ` | <strong>Vaqt:</strong> ${test.duration_minutes} daqiqa`;
+                    }
+                    testInfoDiv.innerHTML = infoText;
+                    testInfoDiv.style.display = 'block';
+                }
+                
+                // Foydalanuvchi ID yaratish yoki ishlatish
+                // Avtomatik ID yaratish (6 xonali)
+                const finalUserId = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                // Foydalanuvchini login qilish
+                const loginResponse = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        name: fullName,
+                        id: finalUserId
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error('Foydalanuvchi yaratishda xatolik yuz berdi.');
+                }
+                
+                const loginData = await loginResponse.json();
+                
+                // Test ishlash sahifasiga o'tish
+                window.location.href = `./ishlash.html?test_id=${testId}&user_id=${finalUserId}&user_name=${encodeURIComponent(fullName)}`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.textContent = error.message || 'Xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.';
+                errorDiv.style.display = 'block';
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Testni Boshlash';
+            }
+            
+            return false;
+        }
+        
+        // Form submit eventi
+        form.addEventListener('submit', handleSubmit);
+        
+        // Submit tugmasi uchun click handler
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleSubmit(e);
+        });
+    </script>
+</body>
+</html>
