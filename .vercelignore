@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+*.sqlite3
+matematika_test.db
+.env
+.venv/
+venv/
+*.log
+
