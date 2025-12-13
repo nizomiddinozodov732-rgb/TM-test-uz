@@ -26,8 +26,33 @@ CORS(app, resources={
     }
 })
 
-# Database yaratish
-init_db()
+# Database yaratish - lazy initialization (faqat kerak bo'lganda)
+# SQLite Vercel'da ishlamaydi, shuning uchun try-except qo'shildi
+_db_initialized = False
+
+def ensure_db():
+    """Database ni faqat kerak bo'lganda yaratish"""
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+            _db_initialized = True
+        except Exception as e:
+            # Vercel'da SQLite ishlamaydi - bu normal
+            # Production'da cloud database ishlatish kerak
+            print(f"Database initialization warning: {e}")
+            _db_initialized = True  # Xatolikni qayta-qayta ko'rsatmaslik uchun
+
+def safe_get_db():
+    """Database connection olish, xatolikni boshqarish"""
+    try:
+        ensure_db()
+        return get_db()
+    except Exception as e:
+        error_msg = str(e)
+        if "SQLite" in error_msg or "read-only" in error_msg.lower():
+            raise Exception("SQLite Vercel'da ishlamaydi. Iltimos, cloud database (Vercel Postgres, Supabase, va hokazo) sozlang.")
+        raise
 
 def generate_test_id():
     """6 xonali test ID yaratish"""
@@ -73,6 +98,8 @@ def ishlash():
 @app.route('/api/login', methods=['POST'])
 def login():
     """Foydalanuvchi kirish"""
+    ensure_db()  # Database ni tekshirish
+    
     data = request.json
     name = data.get('name')
     user_id = data.get('id')
@@ -80,7 +107,10 @@ def login():
     if not name or not user_id:
         return jsonify({'error': 'Ism va ID kiritilishi shart'}), 400
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Foydalanuvchini topish
@@ -109,7 +139,12 @@ def login():
 @app.route('/api/tests', methods=['GET'])
 def get_tests():
     """Barcha testlarni olish"""
-    conn = get_db()
+    ensure_db()  # Database ni tekshirish
+    
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM tests ORDER BY created_at DESC')
     tests = cursor.fetchall()
@@ -132,7 +167,10 @@ def get_tests():
 @app.route('/api/tests/<test_id>', methods=['GET'])
 def get_test(test_id):
     """Bitta testni barcha savollari bilan olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -208,7 +246,10 @@ def create_test():
     
     # Test ID yaratish
     test_id = generate_test_id()
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # ID takrorlanmasligini tekshirish
@@ -270,7 +311,10 @@ def delete_test(test_id):
     if delete_code != '2025':
         return jsonify({'error': 'Noto\'g\'ri kod'}), 403
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -317,7 +361,10 @@ def submit_test(test_id):
     if not user_id:
         return jsonify({'error': 'User ID kiritilishi shart'}), 400
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -383,7 +430,10 @@ def submit_test(test_id):
 @app.route('/api/results/<test_id>', methods=['GET'])
 def get_test_results(test_id):
     """Test natijalarini olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -429,7 +479,10 @@ def get_test_results(test_id):
 @app.route('/api/results/user/<user_id>', methods=['GET'])
 def get_user_results(user_id):
     """Foydalanuvchining barcha test natijalarini olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     cursor.execute(
@@ -460,7 +513,10 @@ def get_user_results(user_id):
 @app.route('/api/results/<result_id>', methods=['GET'])
 def get_result(result_id):
     """Bitta natijani olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     cursor.execute('SELECT * FROM test_results WHERE id = ?', (result_id,))

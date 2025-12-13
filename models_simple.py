@@ -6,9 +6,13 @@ DB_NAME = 'matematika_test.db'
 
 def get_db():
     """Database connection olish"""
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except Exception as e:
+        # Vercel'da SQLite ishlamaydi (read-only filesystem)
+        raise Exception(f"SQLite Vercel'da ishlamaydi. Cloud database sozlash kerak. Xatolik: {str(e)}")
 
 def init_db():
     """Database jadvallarini yaratish"""
@@ -94,6 +98,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Database yaratish
-init_db()
+# Database yaratish - faqat local development uchun
+# Vercel'da bu qator o'chiriladi yoki cloud database ishlatiladi
+# init_db()  # Vercel'da ishlamaydi, shuning uchun comment qilindi
 
