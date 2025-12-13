@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TM-test-uz</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <form action="">
+                <label for=""></label>
+                <input type="text" placeholder="Qidiruv"  id="panjara">
+                <button>Qidiruv</button>
+            </form>
+            <div class="birinchi_tugmalar">
+                <button id="yuklash_"><a href="./test_yuklash.html">Test yuklash</a></button>
+                <button id="boshlash_"><a href="./kirish.html" >Testni Boshlash</a></button>
+                <button id="tanlov_"><a href="./test_tanlov.html">Test Tanlash</a></button>
+            </div>
+        </nav>
+        <hr>
+    </header>
+    <aside>
+        <div class="yuklangan_testlar" id="testsContainer">
+            <p id="loadingMessage">Testlar yuklanmoqda...</p>
+            <!-- Testlar bu yerga dinamik ravishda qo'shiladi -->
+        </div>
+
+    </aside>
+
+    <script>
+        // API URL - environment ga qarab o'zgaradi
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000/api'
+            : window.location.origin + '/api';
+        
+        // Server mavjudligini tekshirish
+        async function checkServer() {
+            try {
+                const response = await fetch(`${API_URL}/tests`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Sahifa yuklanganda testlarni yuklash
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Server mavjudligini tekshirish
+            const serverAvailable = await checkServer();
+            if (!serverAvailable) {
+                const container = document.getElementById('testsContainer');
+                container.innerHTML = `
+                    <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
+                        <h3>⚠️ Server bilan bog'lanishda muammo!</h3>
+                        <p><strong>Backend server ishlamayapti.</strong></p>
+                        <p>Iltimos, quyidagi qadamlarni bajaring:</p>
+                        <ol>
+                            <li>Terminal yoki Command Prompt ni oching</li>
+                            <li>Loyiha papkasiga o'ting</li>
+                            <li>Quyidagi buyruqlarni bajaring:</li>
+                        </ol>
+                        <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">
+pip install -r requirements.txt
+python app.py
+                        </pre>
+                        <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
+                    </div>
+                `;
+                return; 
+            }
+            loadTests();
+        });
+
+        async function loadTests() {
+            const container = document.getElementById('testsContainer');
+            container.innerHTML = '<p id="loadingMessage">Testlar yuklanmoqda...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/tests`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.tests) {
+                    allTests = data.tests; // Barcha testlarni saqlash
+                    displayTests(data.tests);
+                } else {
+                    container.innerHTML = '<p>Testlar topilmadi yoki xatolik yuz berdi.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                let errorMessage = 'Server bilan bog\'lanishda muammo. ';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage += '<br><strong>Backend server ishlamayapti!</strong><br>';
+                    errorMessage += 'Iltimos, quyidagi buyruqni terminalda bajaring:<br>';
+                    errorMessage += '<code>python app.py</code>';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                container.innerHTML = `<p style="color: red;">${errorMessage}</p>`;
+            }
+        }
+
+        function displayTests(tests) {
+            const container = document.getElementById('testsContainer');
+            
+            if (tests.length === 0) {
+                container.innerHTML = '<p>Hozircha testlar mavjud emas. Test yuklash sahifasidan yangi test qo\'shing.</p>';
+                return;
+            }
+
+            let html = '';
+            tests.forEach(test => {
+                const classText = test.class_level ? test.class_level : 'Sinfi ko\'rsatilmagan';
+                const subjectText = test.subject ? test.subject : 'Fan ko\'rsatilmagan';
+                const durationText = test.duration_minutes ? `${test.duration_minutes} daqiqa` : 'Vaqt belgilanmagan';
+                const imageHtml = test.image ? 
+                    `<img src="${test.image}" alt="rasm" class="box" style="max-width: 100%; height: auto;">` :
+                    `<div class="box" style="display: flex; align-items: center; justify-content: center; min-height: 180px; background: var(--blue-soft); color: var(--blue-dark); border: 2px dashed var(--border); border-radius: 12px; font-size: 16px; font-weight: 500;">Rasm qo'yilmagan</div>`;
+                html += `
+                    <div class="test">
+                        <i>${test.name} <span class="test-id">(ID: ${test.id})</span></i>
+                        <div><small>${classText} · ${subjectText} · ${durationText}</small></div>
+                        ${imageHtml}
+                        <button onclick="startTest('${test.id}')">Testni boshlash</button><br>
+                        <a href="#" onclick="viewResults('${test.id}'); return false;" class="havola">
+                            <i>__Natijalarni ko'rish__</i>
+                        </a>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function startTest(testId) {
+            // Test kirish sahifasiga o'tish (test_id bilan)
+            window.location.href = `./kirish.html?test_id=${testId}`;
+        }
+
+        function viewResults(testId) {
+            // Natijalarni alohida sahifada ko'rsatish
+            window.location.href = `./results.html?test_id=${testId}`;
+        }
+
+        let allTests = []; // Barcha testlar
+
+        // Qidiruv funksiyasi
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = document.getElementById('panjara').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                displayTests(allTests);
+            } else {
+                const filteredTests = allTests.filter(test => 
+                    test.name.toLowerCase().includes(searchTerm) ||
+                    test.id.includes(searchTerm)
+                );
+                displayTests(filteredTests);
+            }
+        });
+
+        // Qidiruv inputida real-time qidiruv
+        document.getElementById('panjara').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            if (searchTerm === '') {
+                displayTests(allTests);
+            } else {
+                const filteredTests = allTests.filter(test => 
+                    test.name.toLowerCase().includes(searchTerm) ||
+                    test.id.includes(searchTerm)
+                );
+                    displayTests(filteredTests);
+                }
+            });
+    </script>
+
+    <footer>
+        <div class="asosiy_havolalar">
+            <div class="havolar_ichida1">
+                <button class="havola_uchun_tugma_1"><a href="./kirish.html">test ishlash uchun bosing</a></button><br><br>
+                <button  class="havola_uchun"><a href="./test_yuklash.html">test yuklash uchun bosing</a></button><br><br>
+                <i style="color: white;">Murojat:+998-12-345-67-89</i><br><br>
+         
+                
+            </div>
+            <div class="havola_ichida2">
+                <a href="https://www.google.com/search?q=telegram&oq=telegram&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDE4NzlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8">Telegram</a>
+                <a href="https://www.google.com/search?q=insatagaram&oq=insatagaram&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDI2MjNqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8">Instagaram</a>
+                <a href="https://www.youtube.com/">Youtube</a>
+                <a href="#panjara">Tezkor qidiruv</a>
+    
+            </div>
+    
+        </div> 
+
+    </footer>
+</body>
+</html>
