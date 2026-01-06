@@ -5,9 +5,17 @@ import os
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parent_dir)
 
-from flask import Flask, request, jsonify, render_template, send_from_directory
-from flask_cors import CORS
-from models_simple import get_db, init_db
+try:
+    from flask import Flask, request, jsonify, render_template, send_from_directory
+    from flask_cors import CORS
+except ImportError as e:
+    raise ImportError(f"Flask kutubxonalari topilmadi: {e}. pip install Flask Flask-CORS")
+
+try:
+    from models_simple import get_db, init_db
+except ImportError as e:
+    raise ImportError(f"models_simple import xatolik: {e}. Path: {parent_dir}")
+
 import random
 import string
 
@@ -577,9 +585,16 @@ def internal_error(error):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    return jsonify({'error': str(e)}), 500
+    import traceback
+    error_trace = traceback.format_exc()
+    print(f"Xatolik: {str(e)}")
+    print(f"Traceback: {error_trace}")
+    return jsonify({
+        'error': str(e),
+        'type': type(e).__name__
+    }), 500
 
-# Vercel uchun handler export qilish
+# Vercel uchun handler export qilish (majburiy)
 handler = app
 __all__ = ['app', 'handler']
 
