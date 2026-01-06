@@ -90,3 +90,4 @@ SQLite database fayli `matematika_test.db` nomi bilan yaratiladi.
 Frontend HTML fayllarini backend API bilan bog'lash uchun JavaScript kod qo'shishingiz kerak bo'ladi.
 
 "# tugallangan-loyiha" 
+"# testyech"  
