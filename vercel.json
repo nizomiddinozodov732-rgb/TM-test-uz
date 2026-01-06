@@ -1,8 +1,8 @@
 {
-  "version": 2,
+   "version": 2,
   "functions": {
     "api/app.py": {
-      "runtime": "python3.11",
+      "runtime": "python@3.11",
       "maxDuration": 30
     }
   },
