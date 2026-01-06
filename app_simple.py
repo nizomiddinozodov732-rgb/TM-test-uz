@@ -1,22 +1,49 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from models_simple import get_db, init_db
 import random
 import string
+import os
 
-app = Flask(__name__)
+# Flask app yaratish - templates va static papkalarini ko'rsatish
+app = Flask(__name__, 
+            template_folder=os.path.join(os.path.dirname(__file__), 'templates'),
+            static_folder=os.path.join(os.path.dirname(__file__), 'static'),
+            static_url_path='/static')
 
 # CORS sozlamalari - barcha manbalarga ruxsat
 CORS(app, resources={
-    r"/api/*": {
+    r"/*": {
         "origins": "*",
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
 
-# Database yaratish
-init_db()
+# Database yaratish - lazy initialization (faqat kerak bo'lganda)
+_db_initialized = False
+
+def ensure_db():
+    """Database ni faqat kerak bo'lganda yaratish"""
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+            _db_initialized = True
+        except Exception as e:
+            print(f"Database initialization warning: {e}")
+            _db_initialized = True  # Xatolikni qayta-qayta ko'rsatmaslik uchun
+
+def safe_get_db():
+    """Database connection olish, xatolikni boshqarish"""
+    try:
+        ensure_db()
+        return get_db()
+    except Exception as e:
+        error_msg = str(e)
+        if "SQLite" in error_msg or "read-only" in error_msg.lower():
+            raise Exception("SQLite Vercel'da ishlamaydi. Iltimos, cloud database (Vercel Postgres, Supabase, va hokazo) sozlang.")
+        raise
 
 def generate_test_id():
     """6 xonali test ID yaratish"""
@@ -27,14 +54,19 @@ def generate_test_id():
 @app.route('/api/login', methods=['POST'])
 def login():
     """Foydalanuvchi kirish"""
-    data = request.json
+    ensure_db()  # Database ni tekshirish
+    
+    data = request.json or {}
     name = data.get('name')
     user_id = data.get('id')
     
     if not name or not user_id:
         return jsonify({'error': 'Ism va ID kiritilishi shart'}), 400
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Foydalanuvchini topish
@@ -63,7 +95,12 @@ def login():
 @app.route('/api/tests', methods=['GET'])
 def get_tests():
     """Barcha testlarni olish"""
-    conn = get_db()
+    ensure_db()  # Database ni tekshirish
+    
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM tests ORDER BY created_at DESC')
     tests = cursor.fetchall()
@@ -86,7 +123,10 @@ def get_tests():
 @app.route('/api/tests/<test_id>', methods=['GET'])
 def get_test(test_id):
     """Bitta testni barcha savollari bilan olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -138,7 +178,7 @@ def get_test(test_id):
 @app.route('/api/tests/create', methods=['POST'])
 def create_test():
     """Yangi test yaratish"""
-    data = request.json
+    data = request.json or {}
     test_name = data.get('name')
     questions = data.get('questions', [])
     test_image = data.get('image')  # Rasm base64 formatida
@@ -162,7 +202,10 @@ def create_test():
     
     # Test ID yaratish
     test_id = generate_test_id()
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # ID takrorlanmasligini tekshirish
@@ -224,7 +267,10 @@ def delete_test(test_id):
     if delete_code != '2025':
         return jsonify({'error': 'Noto\'g\'ri kod'}), 403
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -264,14 +310,17 @@ def delete_test(test_id):
 @app.route('/api/tests/<test_id>/submit', methods=['POST'])
 def submit_test(test_id):
     """Test javoblarini yuborish va natijani hisoblash"""
-    data = request.json
+    data = request.json or {}
     user_id = data.get('user_id')
     answers = data.get('answers', [])
     
     if not user_id:
         return jsonify({'error': 'User ID kiritilishi shart'}), 400
     
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -337,7 +386,10 @@ def submit_test(test_id):
 @app.route('/api/results/<test_id>', methods=['GET'])
 def get_test_results(test_id):
     """Test natijalarini olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     # Testni topish
@@ -383,7 +435,10 @@ def get_test_results(test_id):
 @app.route('/api/results/user/<user_id>', methods=['GET'])
 def get_user_results(user_id):
     """Foydalanuvchining barcha test natijalarini olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     cursor.execute(
@@ -414,7 +469,10 @@ def get_user_results(user_id):
 @app.route('/api/results/<result_id>', methods=['GET'])
 def get_result(result_id):
     """Bitta natijani olish"""
-    conn = get_db()
+    try:
+        conn = safe_get_db()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     cursor = conn.cursor()
     
     cursor.execute('SELECT * FROM test_results WHERE id = ?', (result_id,))
@@ -446,9 +504,46 @@ def get_result(result_id):
         }
     })
 
+# ============ HTML PAGES ============
+
+@app.route('/')
+def index():
+    """Asosiy sahifa"""
+    return render_template('Index.html')
+
+@app.route('/Index.html')
+def index_html():
+    """Asosiy sahifa (alternativ URL)"""
+    return render_template('Index.html')
+
+@app.route('/kirish.html')
+def kirish():
+    """Kirish sahifasi"""
+    return render_template('kirish.html')
+
+@app.route('/test_tanlov.html')
+def test_tanlov():
+    """Test tanlash sahifasi"""
+    return render_template('test_tanlov.html')
+
+@app.route('/test_yuklash.html')
+def test_yuklash():
+    """Test yuklash sahifasi"""
+    return render_template('test_yuklash.html')
+
+@app.route('/results.html')
+def results():
+    """Natijalar sahifasi"""
+    return render_template('results.html')
+
+@app.route('/ishlash.html')
+def ishlash():
+    """Test ishlash sahifasi"""
+    return render_template('ishlash.html')
+
 # Root route for health check
-@app.route('/', methods=['GET'])
-def root():
+@app.route('/api/health', methods=['GET'])
+def health():
     return jsonify({
         'message': 'Matematika Test API',
         'status': 'running',

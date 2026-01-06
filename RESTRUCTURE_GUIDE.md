@@ -82,7 +82,7 @@ python app.py
 Yoki:
 
 ```bash
-python api/app.py
+python app.py
 ```
 
 Server `http://localhost:5000` da ishga tushadi.

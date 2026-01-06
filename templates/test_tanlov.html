@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Tanlash</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
@@ -77,9 +77,10 @@
     </section>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        // API bazaviy URL - avtomatik environment detection
+        const API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:5000/api'
-            : window.location.origin + '/api';
+            : `${window.location.origin}/api`;
         let allTests = [];
 
         // Server mavjudligini tekshirish
@@ -96,28 +97,25 @@
             }
         }
 
-        // Local development ekanligini tekshirish
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
         // Sahifa yuklanganda testlarni yuklash
         window.addEventListener('DOMContentLoaded', async function() {
-            // Server mavjudligini tekshirish (faqat localhost'da)
-            if (isLocalhost) {
-                const serverAvailable = await checkServer();
-                if (!serverAvailable) {
-                    const container = document.getElementById('testsContainer');
-                    container.innerHTML = `
-                        <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
-                            <h3>⚠️ Server bilan bog'lanishda muammo!</h3>
-                            <p><strong>Backend server ishlamayapti.</strong></p>
-                            <p>Iltimos, terminalda quyidagi buyruqni bajaring:</p>
-                            <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">python api/app.py</pre>
-                            <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
-                        </div>
-                    `;
-                    container.style.display = 'block';
-                    return;
-                }
+            const serverAvailable = await checkServer();
+            if (!serverAvailable) {
+                const container = document.getElementById('testsContainer');
+                container.innerHTML = `
+                    <div style="color: red; padding: 20px; border: 2px solid red; border-radius: 5px;">
+                        <h3>⚠️ Server bilan bog'lanishda muammo!</h3>
+                        <p><strong>Backend server ishlamayapti.</strong></p>
+                        <p>Iltimos, terminalda quyidagi buyruqni bajaring:</p>
+                        <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">
+pip install -r requirements.txt
+python app.py
+                        </pre>
+                        <p>Server ishga tushgandan keyin sahifani yangilang (F5).</p>
+                    </div>
+                `;
+                container.style.display = 'block';
+                return;
             }
             await loadAllTests();
         });

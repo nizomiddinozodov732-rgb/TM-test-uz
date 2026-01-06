@@ -31,8 +31,10 @@
     </aside>
 
     <script>
-        // API URL - agar boshqa portda ishlasa, bu yerni o'zgartiring
-        const API_URL = 'http://localhost:5000/api';
+        // API bazaviy URL - avtomatik environment detection
+        const API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000/api'
+            : `${window.location.origin}/api`;
         
         // Server mavjudligini tekshirish
         async function checkServer() {
@@ -61,7 +63,7 @@
                         <p>Iltimos, quyidagi qadamlarni bajaring:</p>
                         <ol>
                             <li>Terminal yoki Command Prompt ni oching</li>
-                            <li>Loyiha papkasiga o'ting</li>
+                            <li><code>E:\HTML va CSS\Matematika test</code> papkasiga o'ting</li>
                             <li>Quyidagi buyruqlarni bajaring:</li>
                         </ol>
                         <pre style="background: #f0f0f0; padding: 10px; border-radius: 3px;">
@@ -107,7 +109,8 @@ python app.py
                 
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                     errorMessage += '<br><strong>Backend server ishlamayapti!</strong><br>';
-                    errorMessage += 'Iltimos, quyidagi buyruqni terminalda bajaring:<br>';
+                    errorMessage += 'Iltimos, quyidagi buyruqlarni terminalda bajaring:<br>';
+                    errorMessage += '<code>pip install -r requirements.txt</code><br>';
                     errorMessage += '<code>python app.py</code>';
                 } else {
                     errorMessage += error.message;
@@ -197,7 +200,7 @@ python app.py
             <div class="havolar_ichida1">
                 <button class="havola_uchun_tugma_1"><a href="./kirish.html">test ishlash uchun bosing</a></button><br><br>
                 <button  class="havola_uchun"><a href="./test_yuklash.html">test yuklash uchun bosing</a></button><br><br>
-                <i style="color: white;">Murojat:+998-12-345-67-89</i><br><br>
+                <i style="color: white;">Murojat:+998-97-527-03-43  va +998-94-116-30-38</i><br><br>
          
                 
             </div>

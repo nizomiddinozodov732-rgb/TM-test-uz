@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Parent directory ni path ga qo'shish (models_simple.py uchun)
+# Parent directory ni path ga qo'shish (models_simple.py uchun) - AVVAL qo'shish kerak!
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parent_dir)
 
@@ -11,6 +11,9 @@ from models_simple import get_db, init_db
 import random
 import string
 
+
+
+
 # Flask app yaratish - templates va static papkalarini ko'rsatish
 app = Flask(__name__, 
             template_folder=os.path.join(parent_dir, 'templates'),
@@ -19,7 +22,7 @@ app = Flask(__name__,
 
 # CORS sozlamalari - barcha manbalarga ruxsat
 CORS(app, resources={
-    r"/api/*": {
+    r"/*": {
         "origins": "*",
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
@@ -100,7 +103,7 @@ def login():
     """Foydalanuvchi kirish"""
     ensure_db()  # Database ni tekshirish
     
-    data = request.json
+    data = request.json or {}
     name = data.get('name')
     user_id = data.get('id')
     
@@ -222,7 +225,7 @@ def get_test(test_id):
 @app.route('/api/tests/create', methods=['POST'])
 def create_test():
     """Yangi test yaratish"""
-    data = request.json
+    data = request.json or {}
     test_name = data.get('name')
     questions = data.get('questions', [])
     test_image = data.get('image')  # Rasm base64 formatida
@@ -354,7 +357,7 @@ def delete_test(test_id):
 @app.route('/api/tests/<test_id>/submit', methods=['POST'])
 def submit_test(test_id):
     """Test javoblarini yuborish va natijani hisoblash"""
-    data = request.json
+    data = request.json or {}
     user_id = data.get('user_id')
     answers = data.get('answers', [])
     

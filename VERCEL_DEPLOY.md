@@ -41,3 +41,20 @@ Frontend kodlarda `API_URL` ni Vercel URL ga o'zgartiring:
 const API_URL = 'https://your-project.vercel.app/api';
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
