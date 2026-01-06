@@ -12,8 +12,11 @@ _default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), DB_FILE
 _tmp_path = os.path.join(tempfile.gettempdir(), DB_FILENAME)
 DB_PATH = os.getenv("DB_PATH") or (_tmp_path if _is_vercel else _default_path)
 
-# Papka mavjud bo'lishini ta'minlash
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+# Papka mavjud bo'lishini ta'minlash (xatolik bo'lsa ham davom etadi)
+try:
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+except Exception:
+    pass  # Vercel'da /tmp allaqachon mavjud
 
 def get_db():
     """Database connection olish (Vercel uchun /tmp dan foydalanadi)"""

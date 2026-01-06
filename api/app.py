@@ -579,6 +579,10 @@ def internal_error(error):
 def handle_exception(e):
     return jsonify({'error': str(e)}), 500
 
+# Vercel uchun handler export qilish
+handler = app
+__all__ = ['app', 'handler']
+
 if __name__ == '__main__':
     print("=" * 50)
     print("Matematika Test Backend Server")
