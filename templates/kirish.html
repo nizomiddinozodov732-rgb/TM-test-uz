@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testga Kirish</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='kirish.css') }}">
+    <link rel="stylesheet" href="/static/kirish.css">
 </head>
 <body>
     <header>
@@ -72,10 +72,7 @@
     </section>
     
     <script>
-        // API bazaviy URL - avtomatik environment detection
-        const API_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000/api'
-            : `${window.location.origin}/api`;
+        const API_URL = `${window.location.origin}/api`;
         
         // Formani to'g'ri ishlashini ta'minlash
         const form = document.getElementById('loginForm');

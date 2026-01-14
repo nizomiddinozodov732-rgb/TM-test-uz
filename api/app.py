@@ -5,6 +5,7 @@
 # parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # sys.path.insert(0, parent_dir)
 
+<<<<<<< Updated upstream
 # try:
 #     from flask import Flask, request, jsonify, render_template, send_from_directory
 #     from flask_cors import CORS
@@ -18,6 +19,13 @@
 
 # import random
 # import string
+=======
+from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask_cors import CORS
+from models_simple import get_db, init_db
+import random
+import string
+>>>>>>> Stashed changes
 
 
 
@@ -583,6 +591,7 @@
 # def internal_error(error):
 #     return jsonify({'error': 'Server xatoligi'}), 500
 
+<<<<<<< Updated upstream
 # @app.errorhandler(Exception)
 # def handle_exception(e):
 #     import traceback
@@ -597,6 +606,11 @@
 # # Vercel uchun handler export qilish (majburiy)
 # handler = app
 # __all__ = ['app', 'handler']
+=======
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return jsonify({'error': str(e)}), 500
+>>>>>>> Stashed changes
 
 # if __name__ == '__main__':
 #     print("=" * 50)

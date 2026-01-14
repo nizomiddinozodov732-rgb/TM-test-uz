@@ -1,5 +1,6 @@
 {
   "version": 2,
+<<<<<<< Updated upstream
   "builds": [
     {
       "src": "api/app.py",
@@ -7,6 +8,9 @@
     }
   ],
   "routes": [
+=======
+  "rewrites": [
+>>>>>>> Stashed changes
     {
       "src": "/(.*)",
       "dest": "api/app.py"

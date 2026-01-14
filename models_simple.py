@@ -1,34 +1,18 @@
-import os
 import sqlite3
-import tempfile
 from datetime import datetime
+import os
 
-DB_FILENAME = "matematika_test.db"
-
-# Vercel serverless muhitida /var/task yozib bo'lmaydi.
-# Shu sababli database faylini /tmp ichida saqlaymiz (ephemeral, lekin yozishga ruxsat bor).
-_is_vercel = os.getenv("VERCEL") or os.getenv("NOW_REGION") or os.getenv("VERCEL_ENV")
-_default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), DB_FILENAME)
-_tmp_path = os.path.join(tempfile.gettempdir(), DB_FILENAME)
-DB_PATH = os.getenv("DB_PATH") or (_tmp_path if _is_vercel else _default_path)
-
-# Papka mavjud bo'lishini ta'minlash (xatolik bo'lsa ham davom etadi)
-try:
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-except Exception:
-    pass  # Vercel'da /tmp allaqachon mavjud
+DB_NAME = 'matematika_test.db'
 
 def get_db():
-    """Database connection olish (Vercel uchun /tmp dan foydalanadi)"""
+    """Database connection olish"""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
         return conn
     except Exception as e:
-        raise Exception(
-            "SQLite ulanishida muammo. Cloud database tavsiya qilinadi. "
-            f"Xatolik: {str(e)}"
-        )
+        # Vercel'da SQLite ishlamaydi (read-only filesystem)
+        raise Exception(f"SQLite Vercel'da ishlamaydi. Cloud database sozlash kerak. Xatolik: {str(e)}")
 
 def init_db():
     """Database jadvallarini yaratish"""
