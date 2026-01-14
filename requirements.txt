@@ -1,17 +1,2 @@
-Flask>=2.3.0
-Flask-CORS>=4.0.0
-flask==2.3.2
-<<<<<<< Updated upstream
-=======
-
-
-
-
-
->>>>>>> Stashed changes
-
-
-
-
-
-
+Flask==3.0.0
+gunicorn
